@@ -52,6 +52,13 @@ target_link_libraries(${LIBRARY_NAME}
   ${Boost_LIBRARIES}
 )
 
+target_include_directories(
+  ${LIBRARY_NAME}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+)
+
+
 # Declare example executables
 set(EXAMPLES
   battery_level
