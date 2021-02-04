@@ -48,9 +48,7 @@ if(CMAKE_THREAD_LIBS_INIT)
 endif()
 
 # Link to Boost
-target_link_libraries(${LIBRARY_NAME}
-  ${Boost_LIBRARIES}
-)
+target_link_libraries(${LIBRARY_NAME} PUBLIC Boost::boost)
 
 # Declare example executables
 set(EXAMPLES

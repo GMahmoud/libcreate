@@ -1,4 +1,5 @@
 #include <iostream>
+#include <functional>
 
 #include "create/serial.h"
 #include "create/types.h"
@@ -72,7 +73,7 @@ namespace create {
     // Start continuously reading one byte at a time
     boost::asio::async_read(port,
                             boost::asio::buffer(&byteRead, 1),
-                            boost::bind(&Serial::onData, this, _1, _2));
+                            std::bind(&Serial::onData, this, std::placeholders::_1, std::placeholders::_2));
 
     ioThread = boost::thread(boost::bind(&boost::asio::io_service::run, &io));
 
@@ -145,7 +146,7 @@ namespace create {
     // Read the next byte
     boost::asio::async_read(port,
                             boost::asio::buffer(&byteRead, 1),
-                            boost::bind(&Serial::onData, this, _1, _2));
+                            std::bind(&Serial::onData, this, std::placeholders::_1, std::placeholders::_2));
   }
 
   bool Serial::send(const uint8_t* bytes, unsigned int numBytes) {

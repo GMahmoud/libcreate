@@ -1,4 +1,5 @@
 #include <iostream>
+#include <functional>
 
 #include "create/serial_query.h"
 #include "create/types.h"
@@ -30,7 +31,7 @@ namespace create {
     send(requestPacket, 2);
     // Automatically resend request if no response is received
     streamRecoveryTimer.expires_from_now(boost::posix_time::milliseconds(50));
-    streamRecoveryTimer.async_wait(boost::bind(&SerialQuery::restartSensorStream, this, _1));
+    streamRecoveryTimer.async_wait(std::bind(&SerialQuery::restartSensorStream, this, std::placeholders::_1));
   }
 
   void SerialQuery::restartSensorStream(const boost::system::error_code& err) {
