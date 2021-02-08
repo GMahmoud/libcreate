@@ -1,5 +1,6 @@
 #include <iostream>
 #include <functional>
+#include <memory>
 
 #include "create/serial_query.h"
 #include "create/types.h"
@@ -8,7 +9,7 @@
 
 namespace create {
 
-  SerialQuery::SerialQuery(boost::shared_ptr<Data> d) : Serial(d),
+  SerialQuery::SerialQuery(std::shared_ptr<Data> d) : Serial(d),
     streamRecoveryTimer(io),
     packetID(ID_BUMP_WHEELDROP),
     packetByte(0),
@@ -31,7 +32,8 @@ namespace create {
     send(requestPacket, 2);
     // Automatically resend request if no response is received
     streamRecoveryTimer.expires_from_now(boost::posix_time::milliseconds(50));
-    streamRecoveryTimer.async_wait(std::bind(&SerialQuery::restartSensorStream, this, std::placeholders::_1));
+    streamRecoveryTimer.async_wait(
+      std::bind(&SerialQuery::restartSensorStream, this, std::placeholders::_1));
   }
 
   void SerialQuery::restartSensorStream(const boost::system::error_code& err) {

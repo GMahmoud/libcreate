@@ -35,43 +35,45 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef CREATE_SERIAL_H
 #define CREATE_SERIAL_H
 
+#include <condition_variable>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <thread>
+
 #include <boost/asio.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/condition_variable.hpp>
-#include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include "create/data.h"
 #include "create/types.h"
 #include "create/util.h"
 
 namespace create {
-  class Serial {
+  class Serial : public std::enable_shared_from_this<Serial> {
 
     protected:
       boost::asio::io_service io;
+      boost::asio::signal_set signals;
       boost::asio::serial_port port;
 
     private:
-      boost::thread ioThread;
-      boost::condition_variable dataReadyCond;
-      boost::mutex dataReadyMut;
+      std::thread ioThread;
+      std::condition_variable dataReadyCond;
+      std::mutex dataReadyMut;
       bool dataReady;
       bool isReading;
       bool firstRead;
       uint8_t byteRead;
 
-
       // Callback executed when data arrives from Create
       void onData(const boost::system::error_code& e, const std::size_t& size);
       // Callback to execute once data arrives
-      boost::function<void()> callback;
+      std::function<void()> callback;
       // Start and stop reading data from Create
       bool startReading();
       void stopReading();
 
     protected:
-      boost::shared_ptr<Data> data;
+      std::shared_ptr<Data> data;
       // These are for possible diagnostics
       uint64_t corruptPackets;
       uint64_t totalPackets;
@@ -79,13 +81,14 @@ namespace create {
       virtual bool startSensorStream() = 0;
       virtual void processByte(uint8_t byteRead) = 0;
 
+      void signalHandler(const boost::system::error_code& error, int signal_number);
       // Notifies main thread that data is fresh and makes the user callback
       void notifyDataReady();
 
     public:
-      Serial(boost::shared_ptr<Data> data);
+      Serial(std::shared_ptr<Data> data);
       ~Serial();
-      bool connect(const std::string& port, const int& baud = 115200, boost::function<void()> cb = 0);
+      bool connect(const std::string& port, const int& baud = 115200, std::function<void()> cb = 0);
       void disconnect();
       inline bool connected() const { return port.is_open(); };
       bool send(const uint8_t* bytes, const uint32_t numBytes);
